@@ -4,7 +4,7 @@ from rest_framework.response import Response
 import json
 from .models import User
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
 @api_view(["GET"])
@@ -78,10 +78,11 @@ def login_user(request):
         print(e)
         return Response({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
 
-@login_required
 @api_view(["POST"])
+@login_required
 def logout_user(request):
-    return Response({"gooz": 1})
+    logout(request)
+    return Response({'status': 'success', 'message': 'Logged out successfully'}, status=200)
 
 @api_view(["POST"])
 def borrow_book(request, book_pk):
@@ -91,6 +92,60 @@ def borrow_book(request, book_pk):
 def return_book(request, book_pk):
     pass
 
-@api_view(["POST"])
+@api_view(["PATCH"])
+@login_required
 def update_user(request):
-    pass
+    try: 
+        user = request.user
+        data = json.loads(request.body)
+
+        name = data.get('name')
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        phone_num = data.get('phone_num')
+        is_admin = data.get('is_admin')
+
+        if not name:
+            if user.name == name:
+                return Response({'status': 'error', 'message': 'Name has not changed'}, status=400)
+            if User.objects.filter(name=name).exists():
+                return Response({'status': 'error', 'message': 'Name already exists'}, status=400)
+        
+        if not username:
+            if user.username == username:
+                return Response({'status': 'error', 'message': 'Username has not changed'}, status=400)
+            if User.objects.filter(username=username).exists():
+                return Response({'status': 'error', 'message': 'Username already exists'}, status=400) 
+        
+        if not email:
+            if user.email == email:
+                return Response({'status': 'error', 'message': 'Email has not changed'}, status=400)
+            if User.objects.filter(email=email).exists():
+                return Response({'status': 'error', 'message': 'Email already exists'}, status=400)
+        
+        user.name = name
+        user.username = username
+        user.email = email
+        user.phone_num = phone_num
+        user.is_admin = is_admin
+        user.password = make_password(password)
+
+        user.save()
+        return Response({'status': 'success', 'message': 'Profile updated'}, status=200)
+
+    except Exception as e:
+        print(e)
+        return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
+
+@api_view(["GET"])
+@login_required
+def me(request):
+    try: 
+        user = request.user
+        return Response({'status': 'success', 'user_id': user.id, 'name': user.name, 'username': user.username, 
+                         'email': user.email, 'phone_num': user.phone_num, 'is_admin': user.is_admin}, status=200)
+
+    except Exception as e:
+        print(e)
+        return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
