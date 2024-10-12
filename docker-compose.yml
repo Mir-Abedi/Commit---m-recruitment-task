@@ -32,8 +32,8 @@ services:
 
   books_service:
     build: ./books_service
-    volumes:
-      - .:/books
+    # volumes:
+    #   - .:/books
     environment:
       POSTGRES_DB: gres
       POSTGRES_USER: gres
@@ -50,8 +50,8 @@ services:
   
   borrow_service:
     build: ./borrow_service
-    volumes:
-      - .:/borrow
+    # volumes:
+    #   - .:/borrow
     environment:
       POSTGRES_DB: gres
       POSTGRES_USER: gres

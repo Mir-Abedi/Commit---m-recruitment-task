@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'gres',
         'USER': 'gres',
         'PASSWORD': 'gres',
-        'HOST': "db",
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
