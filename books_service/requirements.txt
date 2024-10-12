@@ -1,0 +1,9 @@
+django
+asgiref
+grpcio
+grpcio-tools
+protobuf
+python-dotenv
+pytz
+six
+sqlparse
