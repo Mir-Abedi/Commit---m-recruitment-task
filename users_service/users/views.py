@@ -22,7 +22,7 @@ def register_user(request):
     pass
 
 @api_view(["POST"])
-def login(request):
+def login_user(request):
     pass
 
 @api_view(["POST"])

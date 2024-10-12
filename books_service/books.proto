@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package booksservice;
+
+service BooksService {
+  rpc is_book(IsBookRequest) returns (IsBookResponse); 
+  rpc get_book_by_id(GetBookByIdRequest) returns (Book);
+  rpc all_books(google.protobuf.Empty) returns (AllBooksResponse);
+  rpc add_book(Book) returns (google.protobuf.empty);
+  rpc update_book(UpdateBookRequest) returns (google.protobuf.empty);
+  rpc delete_book(Book) returns (google.protobuf.empty);
+}
+
+message IsBookRequest {
+  int32 book_id = 1;
+}
+
+message GetBookByIdRequest {
+    int32 book_id = 1;
+  } 
+
+message IsBookResponse {
+  bool exists = 1;
+}
+
+message AllBooksResponse {
+  repeated Book books = 1;
+}
+
+message Book {
+  string title = 1;
+  string author = 2;
+  string genre = 3;
+}
+
+message UpdateBookRequest {
+    Book book = 1;
+    string title = 2;
+    string author = 3;
+    string genre = 4;
+}

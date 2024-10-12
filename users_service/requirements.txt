@@ -1,10 +1,11 @@
 django
 djangorestframework
-asgiref
-grpcio
-grpcio-tools
-protobuf
-python-dotenv
-pytz
-six
-sqlparse
+# asgiref
+# grpcio
+# grpcio-tools
+# protobuf
+# python-dotenv
+# pytz
+# six
+# sqlparse
+psycopg2-binary

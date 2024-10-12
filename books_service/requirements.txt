@@ -7,3 +7,4 @@ python-dotenv
 pytz
 six
 sqlparse
+psycopg2-binary

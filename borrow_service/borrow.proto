@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package borrowservice;
+
+service BorrowService {
+    rpc is_borrowed(IsBorrowedRequest) returns (IsBorrowedResponse);
+    rpc borrow(BorrowRequest) returns (google.protobuf.empty);
+}
+
+message IsBorrowedRequest {
+  int32 book_id = 1;
+}
+
+message IsBorrowedResponse {
+    bool is_borrowed = 1;
+} 
+
+message BorrowRequest {
+  int32 user_id = 1;
+  int32 book_id = 2;
+}

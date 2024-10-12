@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: gres
+      POSTGRES_USER: gres
+      POSTGRES_PASSWORD: gres
+    ports:
+      - "5432:5432"
+
+  users_service:
+    build: ./users_service
+    # volumes:
+    #   - .:.
+    environment:
+      POSTGRES_DB: gres
+      POSTGRES_USER: gres
+      POSTGRES_PASSWORD: gres
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - borrow_service
+      - books_service
+    restart: always
+    links:
+      - db:db
+
+  books_service:
+    build: ./books_service
+    volumes:
+      - .:/books
+    environment:
+      POSTGRES_DB: gres
+      POSTGRES_USER: gres
+      POSTGRES_PASSWORD: gres
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+    restart: always
+    links:
+      - db:db
+  
+  borrow_service:
+    build: ./borrow_service
+    volumes:
+      - .:/borrow
+    environment:
+      POSTGRES_DB: gres
+      POSTGRES_USER: gres
+      POSTGRES_PASSWORD: gres
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db
+    links:
+      - db:db
