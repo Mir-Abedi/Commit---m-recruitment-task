@@ -45,13 +45,15 @@ def register_user(request):
             username=username,
             email=email,
             phone_num=phone_num,
-            password=make_password(password) 
+            password=make_password(password),
+            is_admin=is_admin
         )
         return Response({'status': 'success', 'message': 'User registered successfully', 'user': user.username, 'user_id': user.id}, status=201)
     
     except json.JSONDecodeError:
         return Response({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
-    except: 
+    except Exception as e: 
+        print(e)
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
 @api_view(["POST"])
