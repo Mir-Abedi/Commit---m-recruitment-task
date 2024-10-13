@@ -9,6 +9,8 @@ from django.contrib.auth.decorators import login_required
 import grpc
 from . import books_pb2_grpc
 from . import books_pb2
+from . import borrow_pb2
+from . import borrow_pb2_grpc
 
 AVAILABLE_BOOK_GENRES = ["Fantasy", "Romance", "Horror", "Sci-Fi", "Thriller"]
 
@@ -197,8 +199,40 @@ def logout_user(request):
     return Response({'status': 'success', 'message': 'Logged out successfully'}, status=200)
 
 @api_view(["POST"])
+@login_required
 def borrow_book(request, book_pk):
-    pass
+    try:
+        data = json.loads(request.body)
+        user = request.user
+
+        if not user.is_admin:
+            return Response({'status': 'error', 'message': 'Unauthorized'}, status=401)
+        
+        title = data.get('title')
+        
+        if not title:
+            return Response({'status': 'error', 'message': 'You must provide title'}, status=400)
+
+        with grpc.insecure_channel('books_service:50051') as channel:
+            response = books_pb2_grpc.BooksServiceStub(channel).is_book_by_name(books_pb2.IsBookByNameRequest(book_name=title))
+        if not response.exists:
+            return Response({'status': 'error', 'message': 'Book does not exist'}, status=400)
+
+        with grpc.insecure_channel('books_service:50051') as channel:
+            response = books_pb2_grpc.BooksServiceStub(channel).get_book_by_name(books_pb2.GetBookByNameRequest(book_name=title))
+        
+        author = response.author
+        genre = response.genre
+
+        with grpc.insecure_channel('books_service:50051') as channel:
+            books_pb2_grpc.BooksServiceStub(channel).delete_book(books_pb2.Book(title=title, author=author, genre=genre, id=1))
+
+        return Response({'status': 'success', 'message': 'Book successfully deleted'}, status=200)
+    except json.JSONDecodeError:
+        return Response({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
+    
 
 @api_view(["POST"])
 def return_book(request, book_pk):
