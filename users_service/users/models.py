@@ -7,4 +7,4 @@ class User(AbstractUser):
     is_admin = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "TABLE1"
+        db_table = "USERSTABLE"
