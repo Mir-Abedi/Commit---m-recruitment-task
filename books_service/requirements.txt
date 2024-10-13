@@ -1,4 +1,4 @@
-django
+sqlalchemy
 asgiref
 grpcio
 grpcio-tools

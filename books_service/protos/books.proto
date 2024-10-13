@@ -4,7 +4,9 @@ package booksservice;
 
 service BooksService {
   rpc is_book(IsBookRequest) returns (IsBookResponse); 
+  rpc is_book_by_name(IsBookByNameRequest) returns (IsBookResponse);
   rpc get_book_by_id(GetBookByIdRequest) returns (Book);
+  rpc get_book_by_name(GetBookByNameRequest) returns (Book);
   rpc all_books(EmptyObject) returns (AllBooksResponse);
   rpc add_book(Book) returns (EmptyObject);
   rpc update_book(UpdateBookRequest) returns (EmptyObject);
@@ -15,9 +17,17 @@ message IsBookRequest {
   int32 book_id = 1;
 }
 
+message IsBookByNameRequest {
+  string book_name = 1;
+}
+
 message GetBookByIdRequest {
-    int32 book_id = 1;
-  } 
+  int32 book_id = 1;
+} 
+
+message GetBookByNameRequest {
+  string book_name = 1;
+} 
 
 message IsBookResponse {
   bool exists = 1;
@@ -31,6 +41,7 @@ message Book {
   string title = 1;
   string author = 2;
   string genre = 3;
+  int32 id = 4;
 }
 
 message UpdateBookRequest {
