@@ -19,7 +19,7 @@ def all_books(request):
     try:
         with grpc.insecure_channel('books_service:50051') as channel:
             response = books_pb2_grpc.BooksServiceStub(channel).all_books(books_pb2.EmptyObject())
-        return Response([{'title': i.title, 'author': i.author, 'genre': i.genre} for i in response.books], status=200)
+        return Response([{'title': i.title, 'author': i.author, 'genre': i.genre, 'id': i.id} for i in response.books], status=200)
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
         
@@ -202,34 +202,24 @@ def logout_user(request):
 @login_required
 def borrow_book(request, book_pk):
     try:
-        data = json.loads(request.body)
         user = request.user
-
-        if not user.is_admin:
-            return Response({'status': 'error', 'message': 'Unauthorized'}, status=401)
         
-        title = data.get('title')
-        
-        if not title:
-            return Response({'status': 'error', 'message': 'You must provide title'}, status=400)
+        with grpc.insecure_channel('borrow_service:50052') as channel:
+            response = borrow_pb2_grpc.BorrowServiceStub(channel).is_borrowed(borrow_pb2.IsBorrowedRequest(book_id=book_pk))
+        if response.is_borrowed:
+            return Response({'status': 'error', 'message': 'Book is already borrowed'}, status=400)
+    
 
         with grpc.insecure_channel('books_service:50051') as channel:
-            response = books_pb2_grpc.BooksServiceStub(channel).is_book_by_name(books_pb2.IsBookByNameRequest(book_name=title))
+            response = books_pb2_grpc.BooksServiceStub(channel).is_book(books_pb2.IsBookRequest(book_id=book_pk))
         if not response.exists:
             return Response({'status': 'error', 'message': 'Book does not exist'}, status=400)
 
-        with grpc.insecure_channel('books_service:50051') as channel:
-            response = books_pb2_grpc.BooksServiceStub(channel).get_book_by_name(books_pb2.GetBookByNameRequest(book_name=title))
+
+        with grpc.insecure_channel('borrow_service:50052') as channel:
+            response = borrow_pb2_grpc.BorrowServiceStub(channel).borrow(borrow_pb2.BorrowRequest(user_id=user.id, book_id=book_pk))
         
-        author = response.author
-        genre = response.genre
-
-        with grpc.insecure_channel('books_service:50051') as channel:
-            books_pb2_grpc.BooksServiceStub(channel).delete_book(books_pb2.Book(title=title, author=author, genre=genre, id=1))
-
-        return Response({'status': 'success', 'message': 'Book successfully deleted'}, status=200)
-    except json.JSONDecodeError:
-        return Response({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+        return Response({'status': 'success', 'message': 'Book successfully borrowed'}, status=200)
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
     
