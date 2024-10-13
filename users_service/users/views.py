@@ -92,7 +92,7 @@ def borrow_book(request, book_pk):
 def return_book(request, book_pk):
     pass
 
-@api_view(["PATCH"])
+@api_view(["PUT"])
 @login_required
 def update_user(request):
     try: 
