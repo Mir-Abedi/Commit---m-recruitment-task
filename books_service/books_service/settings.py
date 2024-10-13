@@ -77,10 +77,10 @@ WSGI_APPLICATION = 'books_service.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'postgres'),
-        'USER': os.getenv('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': 'postgres',
+        'NAME': 'gres',
+        'USER': 'gres',
+        'PASSWORD': 'gres',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }

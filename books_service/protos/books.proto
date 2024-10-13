@@ -5,10 +5,10 @@ package booksservice;
 service BooksService {
   rpc is_book(IsBookRequest) returns (IsBookResponse); 
   rpc get_book_by_id(GetBookByIdRequest) returns (Book);
-  rpc all_books(google.protobuf.Empty) returns (AllBooksResponse);
-  rpc add_book(Book) returns (google.protobuf.empty);
-  rpc update_book(UpdateBookRequest) returns (google.protobuf.empty);
-  rpc delete_book(Book) returns (google.protobuf.empty);
+  rpc all_books(EmptyObject) returns (AllBooksResponse);
+  rpc add_book(Book) returns (EmptyObject);
+  rpc update_book(UpdateBookRequest) returns (EmptyObject);
+  rpc delete_book(Book) returns (EmptyObject);
 }
 
 message IsBookRequest {
@@ -38,4 +38,8 @@ message UpdateBookRequest {
     string title = 2;
     string author = 3;
     string genre = 4;
+}
+
+message EmptyObject{
+
 }
