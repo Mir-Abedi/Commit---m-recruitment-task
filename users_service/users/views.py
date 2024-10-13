@@ -127,12 +127,9 @@ def delete_book(request):
         genre = response.genre
 
         with grpc.insecure_channel('books_service:50051') as channel:
-            books_pb2_grpc.BooksServiceStub(channel).update_book(books_pb2.UpdateBookRequest(book=books_pb2.Book(title=curr_title, author=response.author, genre=response.genre, id=1), title=new_title, author=new_author, genre=new_genre))
-        
-        with grpc.insecure_channel('books_service:50051') as channel:
-            response = books_pb2_grpc.BooksServiceStub(channel).get_book_by_name(books_pb2.GetBookByNameRequest(book_name=new_title))
+            books_pb2_grpc.BooksServiceStub(channel).delete_book(books_pb2.Book(title=title, author=author, genre=genre, id=1))
 
-        return Response({'status': 'success', 'title': response.title, 'author': response.author, 'genre': response.genre, 'id': response.id}, status=200)
+        return Response({'status': 'success', 'message': 'Book successfully deleted'}, status=200)
     except json.JSONDecodeError:
         return Response({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
     except Exception as e:
