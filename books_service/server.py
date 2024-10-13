@@ -85,9 +85,6 @@ class Books(books_pb2_grpc.BooksServiceServicer):
         return books_pb2.EmptyObject()
     
 def serve():
-    b1 = Book(title="Amir", author="Amir2", genre="aaaa")
-    session.add(b1)
-    session.commit()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     books_pb2_grpc.add_BooksServiceServicer_to_server(Books(), server)
     server.add_insecure_port('[::]:50051')
