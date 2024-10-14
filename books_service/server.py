@@ -5,11 +5,12 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 import books_pb2
 import books_pb2_grpc
+import os
 
 class Base(DeclarativeBase):
     pass
 
-DATABASE_URL = "postgresql://gres:gres@db:5432/gres"
+DATABASE_URL = f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTGRES_PASSWORD")}@{os.getenv("POSTGRES_HOST")}:{os.getenv("POSTGRES_PORT")}/{os.getenv("POSTGRES_DB")}'
 engine = create_engine(DATABASE_URL, echo=True)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
