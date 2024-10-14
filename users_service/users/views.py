@@ -204,6 +204,9 @@ def delete_book(request):
         author = response.author
         genre = response.genre
 
+        with grpc.insecure_channel('borrow_service:50052') as channel:
+            borrow_pb2_grpc.BorrowServiceStub(channel).delete_book(borrow_pb2.DeleteRequest(book_id=response.id))
+
         with grpc.insecure_channel('books_service:50051') as channel:
             books_pb2_grpc.BooksServiceStub(channel).delete_book(books_pb2.Book(title=title, author=author, genre=genre, id=1))
 
