@@ -324,6 +324,24 @@ def logout_user(request):
     logout(request)
     return Response({'status': 'success', 'message': 'Logged out successfully'}, status=200)
 
+@swagger_auto_schema(
+    operation_id='borrow_book',
+    method='POST',
+    manual_parameters=[
+            openapi.Parameter(
+                'book_pk',
+                openapi.IN_PATH,
+                description="Primary key of the book",
+                type=openapi.TYPE_INTEGER
+            )
+        ],
+    operation_description="An endpoint that is used for borrowing books. Requires log in.",
+    operation_summary="Borrow book",
+    responses={
+        200: openapi.Response('Book borrowed'),
+        400: 'Book not available'
+    }
+)
 @api_view(["POST"])
 @login_required
 def borrow_book(request, book_pk):
@@ -347,7 +365,24 @@ def borrow_book(request, book_pk):
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
     
-
+@swagger_auto_schema(
+    operation_id='return_book',
+    method='POST',
+    manual_parameters=[
+            openapi.Parameter(
+                'book_pk',
+                openapi.IN_PATH,
+                description="Primary key of the book",
+                type=openapi.TYPE_INTEGER
+            )
+        ],
+    operation_description="An endpoint that is used for returning books. Requires log in.",
+    operation_summary="Return book",
+    responses={
+        200: openapi.Response('Book returned'),
+        400: 'Book not borrowed'
+    }
+)
 @api_view(["POST"])
 @login_required
 def return_book(request, book_pk):
