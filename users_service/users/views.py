@@ -411,6 +411,93 @@ def return_book(request, book_pk):
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
 @swagger_auto_schema(
+    operation_id='is_available_book_by_id',
+    method='GET',
+    manual_parameters=[
+            openapi.Parameter(
+                'book_pk',
+                openapi.IN_PATH,
+                description="Primary key of the book",
+                type=openapi.TYPE_INTEGER
+            )
+        ],
+    operation_description="An endpoint that is used for checking if a book is available. This API takes book_pk in path.",
+    operation_summary="Book is available",
+    responses={
+        200: openapi.Response('Book available'),
+        400: 'Book not found'
+    }
+)
+@api_view(["GET"])
+def is_available_in_path(request, book_pk):
+    try:
+        with grpc.insecure_channel('books_service:50051') as channel:
+            response = books_pb2_grpc.BooksServiceStub(channel).is_book(books_pb2.IsBookRequest(book_id=book_pk))
+        if not response.exists:
+            return Response({'status': 'error', 'message': 'Book does not exist'}, status=400)
+        
+        with grpc.insecure_channel('borrow_service:50052') as channel:
+            response = borrow_pb2_grpc.BorrowServiceStub(channel).is_borrowed(borrow_pb2.IsBorrowedRequest(book_id=book_pk))
+        return Response({'status': 'success', 'message': 'Book is ' + ('borrowed' if response.is_borrowed else 'available')}, status=200)
+    
+    except Exception as e:
+        return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
+
+@swagger_auto_schema(
+    operation_id='is_available_book',
+    method='GET',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_STRING, description='Book id'),
+                'title': openapi.Schema(type=openapi.TYPE_INTEGER, description='Book title'),
+            },
+            required=[]
+        ),
+    operation_description="An endpoint that is used for checking if a book is available. This API needs request body. At least one of title and id should be given.",
+    operation_summary="Book is available",
+    responses={
+        200: openapi.Response('Book available'),
+        400: 'Book not found'
+    }
+)
+@api_view(["GET"])
+def is_available(request):
+    try:
+        data = json.loads(request.body)
+        title = data.get('title')
+        id = data.get('id', None)
+
+        if (id == None) and (not title):
+            return Response({'status': 'error', 'message': 'Provide one of title or id'}, status=400)
+
+        if id == None:
+            with grpc.insecure_channel('books_service:50051') as channel:
+                response = books_pb2_grpc.BooksServiceStub(channel).is_book_by_name(books_pb2.IsBookByNameRequest(book_name=title))
+            if not response.exists:
+                return Response({'status': 'error', 'message': 'Book does not exist'}, status=400)
+            
+            with grpc.insecure_channel('books_service:50051') as channel:
+                response = books_pb2_grpc.BooksServiceStub(channel).get_book_by_name(books_pb2.GetBookByNameRequest(book_name=title))
+            
+            with grpc.insecure_channel('borrow_service:50052') as channel:
+                response = borrow_pb2_grpc.BorrowServiceStub(channel).is_borrowed(borrow_pb2.IsBorrowedRequest(book_id=response.id))
+            return Response({'status': 'success', 'message': 'Book is ' + ('borrowed' if response.is_borrowed else 'available')}, status=200)
+        else:
+            with grpc.insecure_channel('books_service:50051') as channel:
+                response = books_pb2_grpc.BooksServiceStub(channel).is_book(books_pb2.IsBookRequest(book_id=id))
+            if not response.exists:
+                return Response({'status': 'error', 'message': 'Book does not exist'}, status=400)
+            
+            with grpc.insecure_channel('borrow_service:50052') as channel:
+                response = borrow_pb2_grpc.BorrowServiceStub(channel).is_borrowed(borrow_pb2.IsBorrowedRequest(book_id=id))
+            return Response({'status': 'success', 'message': 'Book is ' + ('borrowed' if response.is_borrowed else 'available')}, status=200)
+
+    except Exception as e:
+        return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
+
+
+@swagger_auto_schema(
     operation_id='update_user',
     method='PUT',
     request_body=openapi.Schema(
