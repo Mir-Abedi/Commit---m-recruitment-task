@@ -83,7 +83,7 @@ def add_book(request):
 
 @swagger_auto_schema(
     operation_id='update_book',
-    method='POST',
+    method='PUT',
     request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -110,7 +110,7 @@ def add_book(request):
         400: 'book title not given'
     }
 )
-@api_view(["POST"])
+@api_view(["PUT"])
 @login_required
 def update_book(request):
     try:
@@ -408,7 +408,7 @@ def return_book(request, book_pk):
 
 @swagger_auto_schema(
     operation_id='update_user',
-    method='POST',
+    method='PUT',
     request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
