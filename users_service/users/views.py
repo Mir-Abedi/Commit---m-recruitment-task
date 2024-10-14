@@ -402,7 +402,8 @@ def return_book(request, book_pk):
         with grpc.insecure_channel('borrow_service:50052') as channel:
             response = borrow_pb2_grpc.BorrowServiceStub(channel).return_book(borrow_pb2.ReturnRequest(user_id=user.id, book_id=book_pk))
         
-        return Response({'status': 'success', 'message': 'Book successfully returned'}, status=200)
+        user.balance -= response.penalty
+        return Response({'status': 'success', 'message': 'Book successfully returned, return penalty: ' + str(response.penalty) + '$'}, status=200)
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
@@ -487,7 +488,7 @@ def me(request):
     try: 
         user = request.user
         return Response({'status': 'success', 'user_id': user.id, 'name': user.name, 'username': user.username, 
-                         'email': user.email, 'phone_num': user.phone_num, 'is_admin': user.is_admin}, status=200)
+                         'email': user.email, 'phone_num': user.phone_num, 'is_admin': user.is_admin, 'balance': user.balance}, status=200)
 
     except Exception as e:
         print(e)
