@@ -11,9 +11,20 @@ from . import books_pb2_grpc
 from . import books_pb2
 from . import borrow_pb2
 from . import borrow_pb2_grpc
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 AVAILABLE_BOOK_GENRES = ["Fantasy", "Romance", "Horror", "Sci-Fi", "Thriller"]
 
+@swagger_auto_schema(
+    operation_id='all_books',
+    method='GET',
+    operation_description="An endpoint to retrieve all the books",
+    operation_summary="List of all books",
+    responses={
+        200: openapi.Response('[Books]'),
+    }
+)
 @api_view(["GET"])
 def all_books(request):
     try:
@@ -23,6 +34,25 @@ def all_books(request):
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
         
+@swagger_auto_schema(
+    operation_id='add_book',
+    method='POST',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='Title of the book'),
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='Author of the book'),
+                'genre': openapi.Schema(type=openapi.TYPE_STRING, description='Genre of the book. must be one of ' + str(AVAILABLE_BOOK_GENRES))
+            },
+            required=['title', 'author', 'genre']
+        ),
+    operation_description="An endpoint that adds a book to the library.",
+    operation_summary="Create a book",
+    responses={
+        200: openapi.Response('Book found'),
+        400: 'Less than 3 fields given'
+    }
+)
 @api_view(["POST"])
 def add_book(request):
     try:
@@ -51,6 +81,35 @@ def add_book(request):
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
+@swagger_auto_schema(
+    operation_id='update_book',
+    method='POST',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='Title of the book'),
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='Author of the book'),
+                'genre': openapi.Schema(type=openapi.TYPE_STRING, description='Genre of the book. must be one of ' + str(AVAILABLE_BOOK_GENRES)),
+                'book': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    description='Book to be replaced',
+                    properties={
+                        'title': openapi.Schema(type=openapi.TYPE_STRING, description='Title of the book'),
+                        'author': openapi.Schema(type=openapi.TYPE_STRING, description='Author of the book'),
+                        'genre': openapi.Schema(type=openapi.TYPE_STRING, description='Genre of the book'),
+                    },
+                    required=['title']
+                )
+            },
+            required=[]
+        ),
+    operation_description="An endpoint that updated a book in the library. at least one of title, author, genre should be provided. You must have admin priviliges.",
+    operation_summary="Update a book",
+    responses={
+        200: openapi.Response('Book updated'),
+        400: 'book title not given'
+    }
+)
 @api_view(["POST"])
 @login_required
 def update_book(request):
@@ -102,6 +161,23 @@ def update_book(request):
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
+@swagger_auto_schema(
+    operation_id='delete_book',
+    method='DELETE',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='Title of the book'),
+            },
+            required=['title']
+        ),
+    operation_description="An endpoint that deletes a book. You must have admin priviliges.",
+    operation_summary="Delete a book",
+    responses={
+        200: openapi.Response('Book deleted'),
+        400: 'book title not given'
+    }
+)
 @api_view(["DELETE"])
 @login_required
 def delete_book(request):
