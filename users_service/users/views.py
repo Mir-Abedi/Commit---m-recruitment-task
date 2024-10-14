@@ -371,6 +371,29 @@ def return_book(request, book_pk):
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
+@swagger_auto_schema(
+    operation_id='update_user',
+    method='POST',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'name': openapi.Schema(type=openapi.TYPE_STRING, description='User full name'),
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Your email'),
+                'phone_num': openapi.Schema(type=openapi.TYPE_STRING, description='Your phone number'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s passowrd'),
+                'is_admin': openapi.Schema(type=openapi.TYPE_STRING, description='If the user should be created as admin. defaults to False'),
+                
+            },
+            required=[]
+        ),
+    operation_description="An endpoint to change user profile. requires log in.",
+    operation_summary="update user",
+    responses={
+        200: openapi.Response('User updated'),
+        400: 'Bad json data'
+    }
+)
 @api_view(["PUT"])
 @login_required
 def update_user(request):
@@ -383,14 +406,11 @@ def update_user(request):
         email = data.get('email')
         password = data.get('password')
         phone_num = data.get('phone_num')
-        is_admin = data.get('is_admin')
+        is_admin = data.get('is_admin', False)
 
-        if not name:
-            if user.name == name:
-                return Response({'status': 'error', 'message': 'Name has not changed'}, status=400)
-            if User.objects.filter(name=name).exists():
-                return Response({'status': 'error', 'message': 'Name already exists'}, status=400)
-        
+        if (not name) and (not username) and (not email) and (not password) and (not phone_num):
+            return Response({'status': 'error', 'message': 'Provide at least one field'}, status=400)
+
         if not username:
             if user.username == username:
                 return Response({'status': 'error', 'message': 'Username has not changed'}, status=400)
@@ -403,12 +423,12 @@ def update_user(request):
             if User.objects.filter(email=email).exists():
                 return Response({'status': 'error', 'message': 'Email already exists'}, status=400)
         
-        user.name = name
-        user.username = username
-        user.email = email
-        user.phone_num = phone_num
-        user.is_admin = is_admin
-        user.password = make_password(password)
+        user.name = user.name if not name else name
+        user.username = user.username if not username else username
+        user.email = user.email if not email else email
+        user.phone_num = user.phone_num if not phone_num else phone_num
+        user.is_admin = user.is_admin if user.is_admin else is_admin
+        user.password = user.password if not password else make_password(password)
 
         user.save()
         return Response({'status': 'success', 'message': 'Profile updated'}, status=200)
@@ -417,6 +437,15 @@ def update_user(request):
         print(e)
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
+@swagger_auto_schema(
+    operation_id='me_user',
+    method='GET',
+    operation_description="An endpoint that is used for retrieving self data. requires log in.",
+    operation_summary="User profile",
+    responses={
+        200: openapi.Response('{user_data}'),
+    }
+)
 @api_view(["GET"])
 @login_required
 def me(request):
