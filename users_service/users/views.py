@@ -213,6 +213,29 @@ def delete_book(request):
     except Exception as e:
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
+@swagger_auto_schema(
+    operation_id='register_user',
+    method='POST',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'name': openapi.Schema(type=openapi.TYPE_STRING, description='User full name'),
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Your email'),
+                'phone_num': openapi.Schema(type=openapi.TYPE_STRING, description='Your phone number'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s passowrd'),
+                'is_admin': openapi.Schema(type=openapi.TYPE_STRING, description='If the user should be created as admin. defaults to False'),
+                
+            },
+            required=['name', 'username', 'email', 'phone_num', 'password']
+        ),
+    operation_description="An endpoint registers a user.",
+    operation_summary="Register user",
+    responses={
+        200: openapi.Response('User registered'),
+        400: 'Credentials not provided'
+    }
+)
 @csrf_exempt
 @api_view(["POST"])
 def register_user(request):
@@ -249,6 +272,24 @@ def register_user(request):
         print(e)
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
+@swagger_auto_schema(
+    operation_id='login_user',
+    method='POST',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s passowrd'),                
+            },
+            required=['username', 'password']
+        ),
+    operation_description="An endpoint that is used for logging in. Some endpoints logged in users.",
+    operation_summary="Login user",
+    responses={
+        200: openapi.Response('User logged in'),
+        400: 'Invalid credentials'
+    }
+)
 @csrf_exempt
 @api_view(["POST"])
 def login_user(request):
@@ -268,6 +309,15 @@ def login_user(request):
         print(e)
         return Response({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
 
+@swagger_auto_schema(
+    operation_id='logout_user',
+    method='POST',
+    operation_description="An endpoint that is used for logging out. Login required.",
+    operation_summary="Logout user",
+    responses={
+        200: openapi.Response('User logged out'),
+    }
+)
 @api_view(["POST"])
 @login_required
 def logout_user(request):
