@@ -203,18 +203,16 @@ def logout_user(request):
 def borrow_book(request, book_pk):
     try:
         user = request.user
-        
-        with grpc.insecure_channel('borrow_service:50052') as channel:
-            response = borrow_pb2_grpc.BorrowServiceStub(channel).is_borrowed(borrow_pb2.IsBorrowedRequest(book_id=book_pk))
-        if response.is_borrowed:
-            return Response({'status': 'error', 'message': 'Book is already borrowed'}, status=400)
-    
 
         with grpc.insecure_channel('books_service:50051') as channel:
             response = books_pb2_grpc.BooksServiceStub(channel).is_book(books_pb2.IsBookRequest(book_id=book_pk))
         if not response.exists:
             return Response({'status': 'error', 'message': 'Book does not exist'}, status=400)
-
+        
+        with grpc.insecure_channel('borrow_service:50052') as channel:
+            response = borrow_pb2_grpc.BorrowServiceStub(channel).is_borrowed(borrow_pb2.IsBorrowedRequest(book_id=book_pk))
+        if response.is_borrowed:
+            return Response({'status': 'error', 'message': 'Book is already borrowed'}, status=400)
 
         with grpc.insecure_channel('borrow_service:50052') as channel:
             response = borrow_pb2_grpc.BorrowServiceStub(channel).borrow(borrow_pb2.BorrowRequest(user_id=user.id, book_id=book_pk))
@@ -225,8 +223,27 @@ def borrow_book(request, book_pk):
     
 
 @api_view(["POST"])
+@login_required
 def return_book(request, book_pk):
-    pass
+    try:
+        user = request.user
+
+        with grpc.insecure_channel('books_service:50051') as channel:
+            response = books_pb2_grpc.BooksServiceStub(channel).is_book(books_pb2.IsBookRequest(book_id=book_pk))
+        if not response.exists:
+            return Response({'status': 'error', 'message': 'Book does not exist'}, status=400)
+        
+        with grpc.insecure_channel('borrow_service:50052') as channel:
+            response = borrow_pb2_grpc.BorrowServiceStub(channel).is_borrowed_by(borrow_pb2.IsBorrowedByRequest(book_id=book_pk, user_id=user.id))
+        if not response.is_borrowed:
+            return Response({'status': 'error', 'message': 'Book is not borrowed by this user'}, status=400)
+
+        with grpc.insecure_channel('borrow_service:50052') as channel:
+            response = borrow_pb2_grpc.BorrowServiceStub(channel).return_book(borrow_pb2.ReturnRequest(user_id=user.id, book_id=book_pk))
+        
+        return Response({'status': 'success', 'message': 'Book successfully returned'}, status=200)
+    except Exception as e:
+        return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
 
 @api_view(["PUT"])
 @login_required
