@@ -10,12 +10,6 @@ import os
 class Base(DeclarativeBase):
     pass
 
-DATABASE_URL = f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTGRES_PASSWORD")}@{os.getenv("POSTGRES_HOST")}:{os.getenv("POSTGRES_PORT")}/{os.getenv("POSTGRES_DB")}'
-engine = create_engine(DATABASE_URL, echo=True)
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-session = Session()
-
 class Book(Base):
     __tablename__ = 'BOOKSTABLE'
 
@@ -27,6 +21,12 @@ class Book(Base):
     def __repr__(self) -> str:
         return f"{self.id}"
     
+DATABASE_URL = f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTGRES_PASSWORD")}@{os.getenv("POSTGRES_HOST")}:{os.getenv("POSTGRES_PORT")}/{os.getenv("POSTGRES_DB")}'
+engine = create_engine(DATABASE_URL, echo=True)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
+
 class Books(books_pb2_grpc.BooksServiceServicer):
     def is_book(self, request, context):
         res = session.query(session.query(Book).filter(Book.id == request.book_id).exists()).scalar()

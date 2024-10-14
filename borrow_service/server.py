@@ -11,12 +11,6 @@ import os
 class Base(DeclarativeBase):
     pass
 
-DATABASE_URL = f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTGRES_PASSWORD")}@{os.getenv("POSTGRES_HOST")}:{os.getenv("POSTGRES_PORT")}/{os.getenv("POSTGRES_DB")}'
-engine = create_engine(DATABASE_URL, echo=True)
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-session = Session()
-
 class BorrowRecord(Base):
     __tablename__ = 'BORROWTABLE'
 
@@ -26,6 +20,12 @@ class BorrowRecord(Base):
 
     def __repr__(self) -> str:
         return f"{self.id}"
+
+DATABASE_URL = f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTGRES_PASSWORD")}@{os.getenv("POSTGRES_HOST")}:{os.getenv("POSTGRES_PORT")}/{os.getenv("POSTGRES_DB")}'
+engine = create_engine(DATABASE_URL, echo=True)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 class BorrowService(borrow_pb2_grpc.BorrowServiceServicer):
     def is_borrowed(self, request, context):
