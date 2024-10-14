@@ -6,22 +6,14 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 import books_pb2
 import books_pb2_grpc
 
-
-db_config = {
-    'dbname': 'gres2',
-    'user': 'gres',
-    'password': 'gres',
-    'host': '127.0.0.1',
-    'port': '5433',
-}
-
-DATABASE_URL = "postgresql://gres:gres@db:5432/gres"
-engine = create_engine(DATABASE_URL, echo=True)
-
-
 class Base(DeclarativeBase):
     pass
 
+DATABASE_URL = "postgresql://gres:gres@db:5432/gres"
+engine = create_engine(DATABASE_URL, echo=True)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 class Book(Base):
     __tablename__ = 'BOOKSTABLE'
@@ -33,12 +25,7 @@ class Book(Base):
 
     def __repr__(self) -> str:
         return f"{self.id}"
-
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
+    
 class Books(books_pb2_grpc.BooksServiceServicer):
     def is_book(self, request, context):
         res = session.query(session.query(Book).filter(Book.id == request.book_id).exists()).scalar()
@@ -61,7 +48,7 @@ class Books(books_pb2_grpc.BooksServiceServicer):
         return books_pb2.AllBooksResponse(books=[books_pb2.Book(title=i.title, author=i.author, genre=i.genre, id=i.id) for i in arr])
 
     def add_book(self, request, context):
-        book = Book(title=request.title, author=request.title, genre=request.genre)
+        book = Book(title=request.title, author=request.author, genre=request.genre)
         session.add(book)
         session.commit()
         return books_pb2.EmptyObject()

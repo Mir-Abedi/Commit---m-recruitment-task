@@ -7,6 +7,7 @@ service BorrowService {
   rpc is_borrowed_by(IsBorrowedByRequest) returns (IsBorrowedResponse);
   rpc borrow(BorrowRequest) returns (EmptyObject);
   rpc return_book(ReturnRequest) returns (EmptyObject);
+  rpc delete_book(DeleteRequest) returns (EmptyObject);
 }
 
 message IsBorrowedRequest {
@@ -30,6 +31,14 @@ message BorrowRequest {
 message ReturnRequest {
   int32 book_id = 1;
   int32 user_id = 2;
+}
+
+message ReturnResonse {
+  int32 penalty = 1;
+}
+
+message DeleteRequest {
+  int32 book_id = 1;
 }
 
 message EmptyObject {

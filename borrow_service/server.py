@@ -1,41 +1,30 @@
 from concurrent import futures
 import grpc
 from concurrent import futures
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, DateTime, func
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 import borrow_pb2
 import borrow_pb2_grpc
-
-
-db_config = {
-    'dbname': 'gres2',
-    'user': 'gres',
-    'password': 'gres',
-    'host': '127.0.0.1',
-    'port': '5433',
-}
-
-DATABASE_URL = "postgresql://gres:gres@db:5432/gres"
-engine = create_engine(DATABASE_URL, echo=True)
-
+from datetime import datetime, timedelta
 
 class Base(DeclarativeBase):
     pass
 
+DATABASE_URL = "postgresql://gres:gres@db:5432/gres"
+engine = create_engine(DATABASE_URL, echo=True)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 class BorrowRecord(Base):
     __tablename__ = 'BORROWTABLE'
 
     book_id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
+    created_at = Column(DateTime, default=func.now())
 
     def __repr__(self) -> str:
         return f"{self.id}"
-
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()
 
 class BorrowService(borrow_pb2_grpc.BorrowServiceServicer):
     def is_borrowed(self, request, context):
@@ -52,15 +41,32 @@ class BorrowService(borrow_pb2_grpc.BorrowServiceServicer):
         session.commit()
         return borrow_pb2.EmptyObject()
 
-
     def return_book(self, request, context):
         res = session.query(BorrowRecord).filter(BorrowRecord.book_id == request.book_id).filter(BorrowRecord.user_id == request.user_id).first()
+        if not res:
+            return borrow_pb2.ReturnResonse(penalty=0)
+        session.delete(res)
+        session.commit()
+        return borrow_pb2.ReturnResonse(penalty=self.penalty_function(res.created_at))
+    
+    def delete_book(self, request, context):
+        res = session.query(BorrowRecord).filter(BorrowRecord.book_id == request.book_id).first()
         if not res:
             return borrow_pb2.EmptyObject()
         session.delete(res)
         session.commit()
         return borrow_pb2.EmptyObject()
         
+    def penalty_function(self, record_time):
+        if record_time > datetime.now() - timedelta(days=60):
+            return 50
+        elif record_time > datetime.now() - timedelta(days=30):
+            return 20
+        elif record_time > datetime.now() - timedelta(days=7):
+            return 5
+        else:
+            return 0
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     borrow_pb2_grpc.add_BorrowServiceServicer_to_server(BorrowService(), server)

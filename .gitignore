@@ -1,4 +1,4 @@
 
 .DS_Store
 *.pyc
-django-books/*
+dev-env/*

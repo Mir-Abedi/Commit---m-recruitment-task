@@ -40,6 +40,18 @@ class ReturnRequest(_message.Message):
     user_id: int
     def __init__(self, book_id: _Optional[int] = ..., user_id: _Optional[int] = ...) -> None: ...
 
+class ReturnResonse(_message.Message):
+    __slots__ = ("penalty",)
+    PENALTY_FIELD_NUMBER: _ClassVar[int]
+    penalty: int
+    def __init__(self, penalty: _Optional[int] = ...) -> None: ...
+
+class DeleteRequest(_message.Message):
+    __slots__ = ("book_id",)
+    BOOK_ID_FIELD_NUMBER: _ClassVar[int]
+    book_id: int
+    def __init__(self, book_id: _Optional[int] = ...) -> None: ...
+
 class EmptyObject(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...

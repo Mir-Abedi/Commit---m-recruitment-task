@@ -64,3 +64,4 @@ services:
       - db
     links:
       - db:db
+    restart: always

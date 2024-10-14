@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0c\x62orrow.proto\x12\rborrowservice\"$\n\x11IsBorrowedRequest\x12\x0f\n\x07\x62ook_id\x18\x01 \x01(\x05\"7\n\x13IsBorrowedByRequest\x12\x0f\n\x07\x62ook_id\x18\x01 \x01(\x05\x12\x0f\n\x07user_id\x18\x02 \x01(\x05\")\n\x12IsBorrowedResponse\x12\x13\n\x0bis_borrowed\x18\x01 \x01(\x08\"1\n\rBorrowRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x05\x12\x0f\n\x07\x62ook_id\x18\x02 \x01(\x05\"1\n\rReturnRequest\x12\x0f\n\x07\x62ook_id\x18\x01 \x01(\x05\x12\x0f\n\x07user_id\x18\x02 \x01(\x05\"\r\n\x0b\x45mptyObject2\xc9\x02\n\rBorrowService\x12R\n\x0bis_borrowed\x12 .borrowservice.IsBorrowedRequest\x1a!.borrowservice.IsBorrowedResponse\x12W\n\x0eis_borrowed_by\x12\".borrowservice.IsBorrowedByRequest\x1a!.borrowservice.IsBorrowedResponse\x12\x42\n\x06\x62orrow\x12\x1c.borrowservice.BorrowRequest\x1a\x1a.borrowservice.EmptyObject\x12G\n\x0breturn_book\x12\x1c.borrowservice.ReturnRequest\x1a\x1a.borrowservice.EmptyObjectb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0c\x62orrow.proto\x12\rborrowservice\"$\n\x11IsBorrowedRequest\x12\x0f\n\x07\x62ook_id\x18\x01 \x01(\x05\"7\n\x13IsBorrowedByRequest\x12\x0f\n\x07\x62ook_id\x18\x01 \x01(\x05\x12\x0f\n\x07user_id\x18\x02 \x01(\x05\")\n\x12IsBorrowedResponse\x12\x13\n\x0bis_borrowed\x18\x01 \x01(\x08\"1\n\rBorrowRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x05\x12\x0f\n\x07\x62ook_id\x18\x02 \x01(\x05\"1\n\rReturnRequest\x12\x0f\n\x07\x62ook_id\x18\x01 \x01(\x05\x12\x0f\n\x07user_id\x18\x02 \x01(\x05\" \n\rReturnResonse\x12\x0f\n\x07penalty\x18\x01 \x01(\x05\" \n\rDeleteRequest\x12\x0f\n\x07\x62ook_id\x18\x01 \x01(\x05\"\r\n\x0b\x45mptyObject2\x92\x03\n\rBorrowService\x12R\n\x0bis_borrowed\x12 .borrowservice.IsBorrowedRequest\x1a!.borrowservice.IsBorrowedResponse\x12W\n\x0eis_borrowed_by\x12\".borrowservice.IsBorrowedByRequest\x1a!.borrowservice.IsBorrowedResponse\x12\x42\n\x06\x62orrow\x12\x1c.borrowservice.BorrowRequest\x1a\x1a.borrowservice.EmptyObject\x12G\n\x0breturn_book\x12\x1c.borrowservice.ReturnRequest\x1a\x1a.borrowservice.EmptyObject\x12G\n\x0b\x64\x65lete_book\x12\x1c.borrowservice.DeleteRequest\x1a\x1a.borrowservice.EmptyObjectb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,8 +41,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_BORROWREQUEST']._serialized_end=218
   _globals['_RETURNREQUEST']._serialized_start=220
   _globals['_RETURNREQUEST']._serialized_end=269
-  _globals['_EMPTYOBJECT']._serialized_start=271
-  _globals['_EMPTYOBJECT']._serialized_end=284
-  _globals['_BORROWSERVICE']._serialized_start=287
-  _globals['_BORROWSERVICE']._serialized_end=616
+  _globals['_RETURNRESONSE']._serialized_start=271
+  _globals['_RETURNRESONSE']._serialized_end=303
+  _globals['_DELETEREQUEST']._serialized_start=305
+  _globals['_DELETEREQUEST']._serialized_end=337
+  _globals['_EMPTYOBJECT']._serialized_start=339
+  _globals['_EMPTYOBJECT']._serialized_end=352
+  _globals['_BORROWSERVICE']._serialized_start=355
+  _globals['_BORROWSERVICE']._serialized_end=757
 # @@protoc_insertion_point(module_scope)

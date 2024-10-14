@@ -54,6 +54,11 @@ class BorrowServiceStub(object):
                 request_serializer=borrow__pb2.ReturnRequest.SerializeToString,
                 response_deserializer=borrow__pb2.EmptyObject.FromString,
                 _registered_method=True)
+        self.delete_book = channel.unary_unary(
+                '/borrowservice.BorrowService/delete_book',
+                request_serializer=borrow__pb2.DeleteRequest.SerializeToString,
+                response_deserializer=borrow__pb2.EmptyObject.FromString,
+                _registered_method=True)
 
 
 class BorrowServiceServicer(object):
@@ -83,6 +88,12 @@ class BorrowServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def delete_book(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_BorrowServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -104,6 +115,11 @@ def add_BorrowServiceServicer_to_server(servicer, server):
             'return_book': grpc.unary_unary_rpc_method_handler(
                     servicer.return_book,
                     request_deserializer=borrow__pb2.ReturnRequest.FromString,
+                    response_serializer=borrow__pb2.EmptyObject.SerializeToString,
+            ),
+            'delete_book': grpc.unary_unary_rpc_method_handler(
+                    servicer.delete_book,
+                    request_deserializer=borrow__pb2.DeleteRequest.FromString,
                     response_serializer=borrow__pb2.EmptyObject.SerializeToString,
             ),
     }
@@ -214,6 +230,33 @@ class BorrowService(object):
             target,
             '/borrowservice.BorrowService/return_book',
             borrow__pb2.ReturnRequest.SerializeToString,
+            borrow__pb2.EmptyObject.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def delete_book(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/borrowservice.BorrowService/delete_book',
+            borrow__pb2.DeleteRequest.SerializeToString,
             borrow__pb2.EmptyObject.FromString,
             options,
             channel_credentials,
