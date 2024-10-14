@@ -224,7 +224,7 @@ def delete_book(request):
                 'email': openapi.Schema(type=openapi.TYPE_STRING, description='Your email'),
                 'phone_num': openapi.Schema(type=openapi.TYPE_STRING, description='Your phone number'),
                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s passowrd'),
-                'is_admin': openapi.Schema(type=openapi.TYPE_STRING, description='If the user should be created as admin. defaults to False'),
+                'is_admin': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='If the user should be created as admin. defaults to False'),
                 
             },
             required=['name', 'username', 'email', 'phone_num', 'password']
@@ -417,7 +417,7 @@ def return_book(request, book_pk):
                 'email': openapi.Schema(type=openapi.TYPE_STRING, description='Your email'),
                 'phone_num': openapi.Schema(type=openapi.TYPE_STRING, description='Your phone number'),
                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s passowrd'),
-                'is_admin': openapi.Schema(type=openapi.TYPE_STRING, description='If the user should be created as admin. defaults to False'),
+                'is_admin': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='If the user should be created as admin. defaults to False'),
                 
             },
             required=[]
@@ -492,3 +492,54 @@ def me(request):
     except Exception as e:
         print(e)
         return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
+    
+@swagger_auto_schema(
+    operation_id='search_books',
+    method='GET',
+    request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='Title to search for'),
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='Author to search for'), 
+                'genre': openapi.Schema(type=openapi.TYPE_STRING, description='Genre to search for'), 
+            },
+            required=[]
+        ),
+    operation_description="An endpoint to retrieve all the books based on certain criteria",
+    operation_summary="Search books",
+    responses={
+        200: openapi.Response('[Books]'),
+        400: 'No field provided'
+    }
+)
+@api_view(["GET"])
+def search_books(request):
+    try:
+        data = json.loads(request.body)
+        title = data.get('title')
+        author = data.get('author')
+        genre = data.get('genre')
+
+        if (not title) and (not author) and (not genre):
+            return Response({'status': 'error', 'message': 'Provide at least one field'}, status=400) 
+        
+        criteria = []
+        if title:
+            criteria.append(lambda x: x.title.startswith(title))
+
+        if author:
+            criteria.append(lambda x: x.author.startswith(author))
+        
+        if genre:
+            criteria.append(lambda x: x.genre.startswith(genre))
+
+        with grpc.insecure_channel('books_service:50051') as channel:
+            response = books_pb2_grpc.BooksServiceStub(channel).all_books(books_pb2.EmptyObject())
+        
+
+        return Response([{'title': i.title, 'author': i.author, 'genre': i.genre, 'id': i.id} for i in search_based_on_func(response.books, criteria)], status=200)
+    except Exception as e:
+        return Response({'status': 'error', 'message': 'Internal server error'}, status=500)
+
+def search_based_on_func(arr, fs):
+    return [i for i in arr if all([f(i) for f in fs])]
